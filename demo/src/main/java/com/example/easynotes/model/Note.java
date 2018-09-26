@@ -13,7 +13,7 @@ public class Note extends AuditModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long noteId;
 
     @NotNull
     @Lob
@@ -24,20 +24,30 @@ public class Note extends AuditModel {
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JsonIgnore
+    @JoinColumn(name = "user__id", nullable = false)
     private User user;
+
+    @NotNull
+    @Lob
+    private Long userId;
 
     public Note() {
     }
 
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public Long getUserId(){
+        return userId;
+    }
+
     public Long getId() {
-        return id;
+        return noteId;
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.noteId = id;
     }
 
     public String getTitle() {
