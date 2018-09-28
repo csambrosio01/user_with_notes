@@ -1,8 +1,8 @@
 package com.example.easynotes.controller;
 
 import com.example.easynotes.exception.ResourceNotFoundException;
+import com.example.easynotes.model.ApplicationUser;
 import com.example.easynotes.model.Note;
-import com.example.easynotes.model.User;
 import com.example.easynotes.service.NoteService;
 import com.example.easynotes.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,26 +22,29 @@ public class NoteController {
     UserService userService;
 
     //Get All Note
-    @GetMapping("/users/{userId}/notes")
+    @GetMapping("/{userId}/notes")
     public List<Note> getAllNotesByUserId(@PathVariable (value = "userId") Long userId){
-        Optional<User> user = userService.getById(userId);
-        return (List<Note>) noteService.getAllNotesByUser(user.get());
+        if (userService.getById(userId).isPresent()) {
+            ApplicationUser user = userService.getById(userId).get();
+            return noteService.getAllNotesByUser(user);
+        }
+        else throw new ResourceNotFoundException("UserId "+userId+" not found");
     }
 
 
     //Create a new Note
-    @PostMapping("/users/{userId}/notes")
+    @PostMapping("/{userId}/notes")
     public Note createNote(@PathVariable (value = "userId") Long userId, @Valid @RequestBody Note note){
-        Note savedNote = userService.getById(userId).map(user -> {note.setUser(user); note.setUserId(userId); return noteService.createNote(note);}).orElseThrow(() -> new ResourceNotFoundException("UserId "+ userId+ " not found"));
+        Note savedNote = userService.getById(userId).map(user -> {note.setUser(user); return noteService.createNote(note);}).orElseThrow(() -> new ResourceNotFoundException("UserId "+userId+" not found"));
         return savedNote;
     }
 
     //Get a Single Note
-    @GetMapping("/users/{userId}/notes/{noteId}")
+    @GetMapping("/{userId}/notes/{noteId}")
     public Note getNoteByUserIdAndNoteId(@PathVariable(value = "userId") Long userId, @PathVariable(value = "noteId") Long noteId){
-        Optional<User>  user = userService.getById(userId);
+        Optional<ApplicationUser>  user = userService.getById(userId);
         if(user != null){
-            Note saved = noteService.getNoteByUserIdAndNoteId(user.get(), noteId);
+            Note saved = noteService.getNoteByUserAndNoteId(user.get(), noteId);
             if(saved != null) return saved;
         }
         throw new ResourceNotFoundException("UserId "+userId+" not found");
@@ -49,27 +52,20 @@ public class NoteController {
     }
 
     //Update a Note
-    @PutMapping("/users/{userId}/notes/{noteId}")
-    public Note updateNote(@PathVariable(value = "userId") Long userId, @PathVariable (value = "noteId") Long noteId, @Valid @RequestBody Note noteRequest){
-        Optional<User>  user = userService.getById(userId);
-        if(user == null){
-            throw new ResourceNotFoundException("UserId "+userId+" not found");
-        }
-
-        return noteService.getNoteByNoteId(noteId).map(note -> {note.setTitle(noteRequest.getTitle());note.setContent(noteRequest.getContent());return noteService.createNote(note); }).orElseThrow(() -> new ResourceNotFoundException("NoteId "+noteId+" not found"));
-
+    @PutMapping("/notes/{noteId}")
+    public Note updateNote(@PathVariable (value = "noteId") Long noteId, @Valid @RequestBody Note noteRequest){
+        Note toUpdateNote = noteService.getNoteByNoteId(noteId).get();
+        if (toUpdateNote == null)
+            throw new ResourceNotFoundException("NoteId "+noteId+" not found");
+        toUpdateNote.setTitle(noteRequest.getTitle());
+        toUpdateNote.setContent(noteRequest.getContent());
+        return noteService.createNote(toUpdateNote);
     }
 
     //Delete a Note
-    @DeleteMapping("/users/{userId}/notes/{noteId}")
-    public ResponseEntity<?> deleteNote(@PathVariable(value = "userId") Long userId, @PathVariable (value = "noteId") Long noteId){
-        Optional<User>  user = userService.getById(userId);
-        if(user == null){
-            throw new ResourceNotFoundException("UserId "+userId+ " not found");
-        }
-
+    @DeleteMapping("/notes/{noteId}")
+    public ResponseEntity<?> deleteNote(@PathVariable (value = "noteId") Long noteId){
         return noteService.getNoteByNoteId(noteId).map(note -> {noteService.delete(note);return ResponseEntity.ok().build();}).orElseThrow(() -> new ResourceNotFoundException("NoteId "+noteId+ " not found"));
-
     }
 }
 

@@ -1,7 +1,8 @@
 package com.example.easynotes.service;
 
 import com.example.easynotes.exception.ResourceNotFoundException;
-import com.example.easynotes.model.User;
+import com.example.easynotes.model.ApplicationUser;
+import com.example.easynotes.model.Note;
 import com.example.easynotes.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,29 +15,32 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
 
+    private final NoteService noteService;
+
     @Autowired
-    public UserService(UserRepository userRepository){
+    public UserService(UserRepository userRepository, NoteService noteService){
+        this.noteService = noteService;
         this.userRepository = userRepository;
     }
 
-    public Optional<User> getById(long userId){
+    public Optional<ApplicationUser> getById(Long userId){
         if(userRepository.findById(userId) == null)
             throw new ResourceNotFoundException("Userid "+userId+" not found");
-        Optional<User> user =  userRepository.findById(userId);
+        Optional<ApplicationUser> user =  userRepository.findById(userId);
         return user;
     }
 
     @Transactional
-    public User createUser(User user){
-        User save = this.userRepository.save(user);
+    public ApplicationUser createUser(ApplicationUser user){
+        ApplicationUser save = this.userRepository.save(user);
         return save;
     }
 
-    public List<User> getAll(){
-        return userRepository.findAll();
+    public ApplicationUser findByUsername(String username){
+        return userRepository.findByUsername(username);
     }
 
-    public void delete(User user){
+    public void delete(ApplicationUser user){
         userRepository.delete(user);
     }
 }

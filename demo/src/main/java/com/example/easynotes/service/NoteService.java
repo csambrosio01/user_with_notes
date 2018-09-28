@@ -1,8 +1,7 @@
 package com.example.easynotes.service;
 
-import com.example.easynotes.exception.ResourceNotFoundException;
+import com.example.easynotes.model.ApplicationUser;
 import com.example.easynotes.model.Note;
-import com.example.easynotes.model.User;
 import com.example.easynotes.repository.NoteRepository;
 import com.example.easynotes.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +15,9 @@ public class NoteService {
 
     private final NoteRepository noteRepository;
 
-    private final UserRepository userRepository;
-
     @Autowired
-    public NoteService(NoteRepository noteRepository, UserRepository userRepository){
+    public NoteService(NoteRepository noteRepository){
         this.noteRepository = noteRepository;
-        this.userRepository = userRepository;
     }
 
     public Optional<Note> getNoteByNoteId(Long noteId){
@@ -30,22 +26,21 @@ public class NoteService {
     }
 
     public Note createNote(Note note){
-        return noteRepository.save(note);
+        Note savedNote = noteRepository.save(note);
+        return savedNote;
     }
 
-
+    public Note getNoteByUserAndNoteId(ApplicationUser user, Long noteId){
+        Note savedNote = noteRepository.findByUserAndNoteId(user, noteId);
+        return savedNote;
+    }
 
     public void delete(Note note) {
         noteRepository.delete(note);
     }
 
-    public List<Note> getAllNotesByUser(User user) {
-        List<Note> savedNotes = noteRepository.findByUser(user);
+    public List<Note> getAllNotesByUser(ApplicationUser user) {
+        List<Note> savedNotes = noteRepository.findAllByUser(user);
         return savedNotes;
-    }
-
-    public Note getNoteByUserIdAndNoteId(User user, Long noteId) {
-        Note save = noteRepository.findByUserAndNoteId(user, noteId);
-        return save;
     }
 }

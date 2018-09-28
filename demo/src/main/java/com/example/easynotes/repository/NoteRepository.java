@@ -1,19 +1,19 @@
 package com.example.easynotes.repository;
 
+
+import com.example.easynotes.model.ApplicationUser;
 import com.example.easynotes.model.Note;
-import com.example.easynotes.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+
 @Repository
 public interface NoteRepository extends JpaRepository <Note, Long> {
-    List<Note> findByUser(User user);
-
-    @Query
-    Note findByUserAndNoteId(User user, Long id);
+    public List<Note> findAllByUser(ApplicationUser user);
+    Note findByUserAndNoteId(ApplicationUser user, Long noteId);
 }
 
 /*

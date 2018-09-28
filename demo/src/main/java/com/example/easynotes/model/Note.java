@@ -24,31 +24,26 @@ public class Note extends AuditModel {
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user__id", nullable = false)
-    private User user;
+    @JoinColumn(name = "user_id", nullable = false)
+    private ApplicationUser user;
 
-    @NotNull
-    @Lob
-    private Long userId;
-
-    public Note() {
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public Long getUserId(){
-        return userId;
-    }
-
-    public Long getId() {
+    public Long getNoteId() {
         return noteId;
     }
 
-    public void setId(Long id) {
-        this.noteId = id;
+    public void setNoteId(Long noteId) {
+        this.noteId = noteId;
     }
+
+    public ApplicationUser getUser() {
+        return user;
+    }
+
+    public void setUser(ApplicationUser user) {
+        this.user = user;
+    }
+
+    protected Note() { }
 
     public String getTitle() {
         return title;
@@ -64,14 +59,6 @@ public class Note extends AuditModel {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
 /*

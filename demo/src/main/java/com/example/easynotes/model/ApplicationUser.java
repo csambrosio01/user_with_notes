@@ -2,22 +2,22 @@ package com.example.easynotes.model;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.*;
 
 @Entity
 @Table(name = "users")
-public class User extends AuditModel {
+public class ApplicationUser extends AuditModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull
-    @Size(max = 100)
     @Column(unique = true)
     private String username;
 
-    public User() {
+    @NotNull
+    private String password;
+
+    public ApplicationUser() {
     }
 
     public Long getId() {
@@ -34,5 +34,13 @@ public class User extends AuditModel {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }
