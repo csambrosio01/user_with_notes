@@ -5,7 +5,6 @@ import com.example.easynotes.model.Note;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.EntityManager;
 import java.text.ParseException;
 
 public class DtoManager {

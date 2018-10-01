@@ -1,14 +1,11 @@
 package com.example.easynotes.service;
 
 import com.example.easynotes.model.ApplicationUser;
-import com.example.easynotes.model.Note;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 import static java.util.Collections.emptyList;
 

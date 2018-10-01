@@ -1,11 +1,7 @@
 package com.example.easynotes.dto;
 
-import com.example.easynotes.model.ApplicationUser;
-import com.example.easynotes.model.Note;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.text.ParseException;
 
 public class NotesDto {
     @Autowired
