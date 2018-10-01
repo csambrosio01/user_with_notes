@@ -1,5 +1,7 @@
 package com.example.easynotes.controller;
 
+import com.example.easynotes.dto.ApplicationUserDto;
+import com.example.easynotes.dto.DtoManager;
 import com.example.easynotes.model.ApplicationUser;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.example.easynotes.exception.ResourceNotFoundException;
@@ -9,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.text.ParseException;
 import java.util.Optional;
 
 @RestController
@@ -19,23 +22,25 @@ public class UserController {
 
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    private DtoManager dtoManager = new DtoManager();
+
     public UserController(UserService userService, BCryptPasswordEncoder bCryptPasswordEncoder){
         this.userService = userService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @PostMapping("/sign-up")
-    public Long createUser(@Valid @RequestBody ApplicationUser user){
+    public Long createUser(@Valid @RequestBody ApplicationUser user) {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         userService.createUser(user);
         return user.getId();
     }
 
     @PutMapping("/{userId}")
-    public void updateUser(@PathVariable Long userId, @Valid @RequestBody ApplicationUser userRequest) {
-        Optional<ApplicationUser> savedUser = userService.getById(userId);
-        if(savedUser.isPresent()){
-            ApplicationUser user = savedUser.get();
+    public void updateUser(@PathVariable Long userId, @Valid @RequestBody ApplicationUser userRequest) throws ParseException {
+        ApplicationUserDto savedUser = userService.getById(userId);
+        if(savedUser != null){
+            ApplicationUser user = dtoManager.convertToEntity(savedUser);
             user.setUsername(userRequest.getUsername());
             user.setPassword(bCryptPasswordEncoder.encode(userRequest.getPassword()));
             userService.createUser(user);
@@ -44,11 +49,11 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long userId){
-        Optional<ApplicationUser> user = userService.getById(userId);
+    public ResponseEntity<?> deleteUser(@PathVariable Long userId) throws ParseException {
+        ApplicationUserDto user = userService.getById(userId);
         if(user == null)
             throw new ResourceNotFoundException("UserId "+userId+ " not found");
-        userService.delete(user.get());
+        userService.delete(dtoManager.convertToEntity(user));
         return ResponseEntity.ok().build();
     }
 }

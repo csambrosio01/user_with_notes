@@ -43,4 +43,8 @@ public class NoteService {
         List<Note> savedNotes = noteRepository.findAllByUser(user);
         return savedNotes;
     }
+
+    public void updateNote(Note note) {
+        noteRepository.save(note);
+    }
 }

@@ -1,51 +1,67 @@
 package com.example.easynotes.controller;
 
+import com.example.easynotes.dto.ApplicationUserDto;
+import com.example.easynotes.dto.DtoManager;
+import com.example.easynotes.dto.NotesDto;
 import com.example.easynotes.exception.ResourceNotFoundException;
 import com.example.easynotes.model.ApplicationUser;
 import com.example.easynotes.model.Note;
 import com.example.easynotes.service.NoteService;
 import com.example.easynotes.service.UserService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 public class NoteController {
 
     @Autowired
-    NoteService noteService;
+    private NoteService noteService;
 
     @Autowired
-    UserService userService;
+    private UserService userService;
 
-    //Get All Note
+    private DtoManager dtoManager = new DtoManager();
+
+    //Get All Notes
     @GetMapping("/{userId}/notes")
-    public List<Note> getAllNotesByUserId(@PathVariable (value = "userId") Long userId){
-        if (userService.getById(userId).isPresent()) {
-            ApplicationUser user = userService.getById(userId).get();
-            return noteService.getAllNotesByUser(user);
+    public List<NotesDto> getAllNotesByUserId(@PathVariable (value = "userId") Long userId) throws ParseException {
+        if (userService.getById(userId) == null) {
+            throw new ResourceNotFoundException("UserId "+userId+" not found");
         }
-        else throw new ResourceNotFoundException("UserId "+userId+" not found");
+        ApplicationUserDto user = userService.getById(userId);
+        List<Note> notes = noteService.getAllNotesByUser(dtoManager.convertToEntity(user));
+        return notes.stream().map(note -> dtoManager.convertToDto(note)).collect(Collectors.toList());
     }
 
 
     //Create a new Note
     @PostMapping("/{userId}/notes")
-    public Note createNote(@PathVariable (value = "userId") Long userId, @Valid @RequestBody Note note){
-        Note savedNote = userService.getById(userId).map(user -> {note.setUser(user); return noteService.createNote(note);}).orElseThrow(() -> new ResourceNotFoundException("UserId "+userId+" not found"));
-        return savedNote;
+    public NotesDto createNote(@PathVariable (value = "userId") Long userId, @Valid @RequestBody NotesDto notesDto) throws ParseException {
+        ApplicationUserDto user = userService.getById(userId);
+        if(user != null){
+            Note note = dtoManager.convertToEntity(notesDto);
+            note.setUser(dtoManager.convertToEntity(user));
+            noteService.createNote(note);
+            return dtoManager.convertToDto(note);
+        }
+        throw new ResourceNotFoundException("UserId "+userId+" not found");
+
     }
 
     //Get a Single Note
     @GetMapping("/{userId}/notes/{noteId}")
-    public Note getNoteByUserIdAndNoteId(@PathVariable(value = "userId") Long userId, @PathVariable(value = "noteId") Long noteId){
-        Optional<ApplicationUser>  user = userService.getById(userId);
+    public NotesDto getNoteByUserIdAndNoteId(@PathVariable(value = "userId") Long userId, @PathVariable(value = "noteId") Long noteId) throws ParseException {
+        ApplicationUserDto  user = userService.getById(userId);
         if(user != null){
-            Note saved = noteService.getNoteByUserAndNoteId(user.get(), noteId);
-            if(saved != null) return saved;
+            Note saved = noteService.getNoteByUserAndNoteId(dtoManager.convertToEntity(user), noteId);
+            if(saved != null) return dtoManager.convertToDto(saved);
         }
         throw new ResourceNotFoundException("UserId "+userId+" not found");
 
@@ -53,13 +69,11 @@ public class NoteController {
 
     //Update a Note
     @PutMapping("/notes/{noteId}")
-    public Note updateNote(@PathVariable (value = "noteId") Long noteId, @Valid @RequestBody Note noteRequest){
-        Note toUpdateNote = noteService.getNoteByNoteId(noteId).get();
-        if (toUpdateNote == null)
-            throw new ResourceNotFoundException("NoteId "+noteId+" not found");
-        toUpdateNote.setTitle(noteRequest.getTitle());
-        toUpdateNote.setContent(noteRequest.getContent());
-        return noteService.createNote(toUpdateNote);
+    public void updateNote(@PathVariable (value = "noteId") Long noteId, @Valid @RequestBody NotesDto noteRequest) throws ParseException {
+        Optional<Note> note = noteService.getNoteByNoteId(noteId);
+        note.get().setTitle(noteRequest.getTitle());
+        note.get().setContent(noteRequest.getContent());
+        noteService.updateNote(note.get());
     }
 
     //Delete a Note
