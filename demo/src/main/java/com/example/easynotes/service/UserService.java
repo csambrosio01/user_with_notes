@@ -6,34 +6,39 @@ import com.example.easynotes.exception.ResourceNotFoundException;
 import com.example.easynotes.model.ApplicationUser;
 import com.example.easynotes.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.text.ParseException;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
 
-    private final NoteService noteService;
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     private DtoManager dtoManager = new DtoManager();
 
     @Autowired
-    public UserService(UserRepository userRepository, NoteService noteService){
-        this.noteService = noteService;
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder){
         this.userRepository = userRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     public ApplicationUserDto getById(Long userId){
-        if(userRepository.findById(userId) == null)
+        if(!userRepository.findById(userId).isPresent())
             throw new ResourceNotFoundException("UserId "+userId+" not found");
         ApplicationUser user =  userRepository.findById(userId).get();
         return dtoManager.convertToDto(user);
     }
 
     @Transactional
-    public ApplicationUser createUser(ApplicationUser user){
-        ApplicationUser save = this.userRepository.save(user);
-        return save;
+    public ApplicationUserDto createUser(ApplicationUser user){
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        userRepository.save(user);
+        return dtoManager.convertToDto(user);
     }
 
     public ApplicationUser findByUsername(String username){
@@ -42,5 +47,24 @@ public class UserService {
 
     public void delete(ApplicationUser user){
         userRepository.delete(user);
+    }
+
+    public ApplicationUserDto updateUser(Long userId, ApplicationUser userRequest) throws ParseException {
+        ApplicationUserDto savedUser = getById(userId);
+        if(savedUser != null){
+            ApplicationUser user = dtoManager.convertToEntity(savedUser);
+            user.setUsername(userRequest.getUsername());
+            savedUser = createUser(user);
+            return savedUser;
+        }
+        throw new ResourceNotFoundException("UserId "+userId+" not found");
+    }
+
+    public ResponseEntity<?> deleteUser(Long userId) throws ParseException {
+        ApplicationUserDto user = getById(userId);
+        if(user == null)
+            throw new ResourceNotFoundException("UserId "+userId+ " not found");
+        delete(dtoManager.convertToEntity(user));
+        return ResponseEntity.ok().build();
     }
 }

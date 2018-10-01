@@ -17,8 +17,7 @@ public class ApplicationUser extends AuditModel {
     @NotNull
     private String password;
 
-    public ApplicationUser() {
-    }
+    public ApplicationUser() { }
 
     public Long getId() {
         return id;
