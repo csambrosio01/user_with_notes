@@ -10,11 +10,9 @@ public class ApplicationUser extends AuditModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
     @Column(unique = true)
     private String username;
 
-    @NotNull
     private String password;
 
     public ApplicationUser() { }

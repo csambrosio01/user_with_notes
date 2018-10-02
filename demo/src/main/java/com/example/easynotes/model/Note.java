@@ -11,11 +11,9 @@ public class Note extends AuditModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long noteId;
 
-    @NotNull
     @Lob
     private String title;
 
-    @NotNull
     @Lob
     private String content;
 
@@ -40,7 +38,7 @@ public class Note extends AuditModel {
         this.user = user;
     }
 
-    protected Note() { }
+    public Note() { }
 
     public String getTitle() {
         return title;
