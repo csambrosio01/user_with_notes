@@ -1,5 +1,6 @@
-package com.example.easynotes;
+package com.example.easynotes.tests.controller;
 
+import com.example.easynotes.EasyNotesApplication;
 import com.example.easynotes.controller.UserController;
 import com.example.easynotes.dto.ApplicationUserDto;
 import com.example.easynotes.dto.DtoManager;
@@ -47,7 +48,9 @@ public class UserControllerTest {
     @MockBean
     private UserController userController;
 
-    DtoManager dtoManager = new DtoManager();
+    @Autowired
+    private DtoManager dtoManager;
+
 
     @MockBean
     private UserService userService;

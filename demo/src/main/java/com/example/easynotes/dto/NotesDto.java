@@ -1,11 +1,8 @@
 package com.example.easynotes.dto;
 
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Date;
 
 public class NotesDto {
-    @Autowired
-    private ModelMapper modelMapper;
 
     private Long noteId;
 
@@ -14,6 +11,26 @@ public class NotesDto {
     private String content;
 
     private ApplicationUserDto user;
+
+    private Date updatedAt;
+
+    private Date createdAt;
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     public Long getNoteId() {
         return noteId;

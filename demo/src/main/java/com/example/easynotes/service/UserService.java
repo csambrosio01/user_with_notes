@@ -19,12 +19,13 @@ public class UserService {
 
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    private DtoManager dtoManager = new DtoManager();
+    private DtoManager dtoManager;
 
     @Autowired
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder){
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, DtoManager dtoManager){
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.dtoManager = dtoManager;
     }
 
     public ApplicationUserDto getById(Long userId){
@@ -45,16 +46,12 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    public void delete(ApplicationUser user){
-        userRepository.delete(user);
-    }
-
     public ApplicationUserDto updateUser(Long userId, ApplicationUser userRequest) throws ParseException {
         ApplicationUserDto savedUser = getById(userId);
         if(savedUser != null){
             ApplicationUser user = dtoManager.convertToEntity(savedUser);
             user.setUsername(userRequest.getUsername());
-            savedUser = createUser(user);
+            savedUser = dtoManager.convertToDto(user);
             return savedUser;
         }
         throw new ResourceNotFoundException("UserId "+userId+" not found");
@@ -64,7 +61,7 @@ public class UserService {
         ApplicationUserDto user = getById(userId);
         if(user == null)
             throw new ResourceNotFoundException("UserId "+userId+ " not found");
-        delete(dtoManager.convertToEntity(user));
+        userRepository.delete(dtoManager.convertToEntity(user));
         return ResponseEntity.ok().build();
     }
 }

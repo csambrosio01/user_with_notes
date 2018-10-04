@@ -1,5 +1,6 @@
-package com.example.easynotes;
+package com.example.easynotes.tests.controller;
 
+import com.example.easynotes.EasyNotesApplication;
 import com.example.easynotes.controller.NoteController;
 import com.example.easynotes.dto.DtoManager;
 import com.example.easynotes.dto.NotesDto;
@@ -53,7 +54,8 @@ public class NoteControllerTest {
     @MockBean
     private UserService userService;
 
-    private DtoManager dtoManager = new DtoManager();
+    @Autowired
+    private DtoManager dtoManager;
 
     @InjectMocks
     private UserDetailsServiceImpl userDetailsService = new UserDetailsServiceImpl(userService);
@@ -70,7 +72,7 @@ public class NoteControllerTest {
 
         Note note = createNote(user);
 
-        NotesDto notesDto = dtoManager.convertToDto(note);
+        NotesDto notesDto = dtoManager.convertFromNoteToNotesDto(note);
         List<NotesDto> allNotes = singletonList(notesDto);
 
         given(noteController.getAllNotesByUserId(user.getId()))
@@ -96,7 +98,7 @@ public class NoteControllerTest {
 
         Note note = createNote(user);
 
-        NotesDto notesDto = dtoManager.convertToDto(note);
+        NotesDto notesDto = dtoManager.convertFromNoteToNotesDto(note);
 
         given(noteController.getNoteByUserIdAndNoteId(user.getId(), note.getNoteId()))
                 .willReturn(notesDto);
@@ -128,9 +130,9 @@ public class NoteControllerTest {
         note.setContent("testingg");
         note.setUser(user);
 
-        NotesDto notesDto = dtoManager.convertToDto(note);
+        NotesDto notesDto = dtoManager.convertFromNoteToNotesDto(note);
 
-        NotesDto noteUpdatedDto = dtoManager.convertToDto(noteToUpdate);
+        NotesDto noteUpdatedDto = dtoManager.convertFromNoteToNotesDto(noteToUpdate);
 
         given(noteController.updateNote(note.getNoteId(), noteUpdatedDto))
                 .willReturn(notesDto);
@@ -157,7 +159,7 @@ public class NoteControllerTest {
 
         Note note = createNote(user);
 
-        NotesDto notesDto = dtoManager.convertToDto(note);
+        NotesDto notesDto = dtoManager.convertFromNoteToNotesDto(note);
 
         mvc.perform(delete("/notes/1")
                 .with(user("blaze")
@@ -173,7 +175,7 @@ public class NoteControllerTest {
         return user;
     }
 
-    public Note createNote(ApplicationUser user){
+    public Note createNote(ApplicationUser user) throws ParseException {
         Note note = new Note();
         note.setTitle("test 1");
         note.setContent("testing");

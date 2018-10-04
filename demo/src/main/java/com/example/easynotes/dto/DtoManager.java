@@ -3,22 +3,36 @@ package com.example.easynotes.dto;
 import com.example.easynotes.model.ApplicationUser;
 import com.example.easynotes.model.Note;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 
+@Service
 public class DtoManager {
+
+    private final ModelMapper modelMapper;
+
     @Autowired
-    private final ModelMapper modelMapper = new ModelMapper();
+    public DtoManager(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+    }
 
     public Note convertToEntity(NotesDto notesDto) throws ParseException {
         Note note = modelMapper.map(notesDto, Note.class);
         return note;
     }
 
-    public NotesDto convertToDto(Note note){
-        NotesDto noteDto = modelMapper.map(note, NotesDto.class);
-        return noteDto;
+    public NotesDto convertFromNoteToNotesDto(Note note){
+        TypeMap<Note, NotesDto> typeMap = modelMapper.getTypeMap(Note.class, NotesDto.class);
+        if (typeMap == null) {
+            TypeMap<Note, NotesDto> typeMap1 = modelMapper.createTypeMap(Note.class, NotesDto.class);
+            typeMap1.includeBase(Note.class, NotesDto.class);
+            typeMap = typeMap1;
+        }
+
+        return typeMap.map(note);
     }
 
     public ApplicationUser convertToEntity(ApplicationUserDto userDto) throws ParseException {
