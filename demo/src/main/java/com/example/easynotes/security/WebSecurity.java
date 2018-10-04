@@ -26,17 +26,35 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
     }
 
     protected void configure(HttpSecurity httpSecurity) throws Exception{
-        httpSecurity.cors().and().csrf().disable().authorizeRequests().antMatchers(HttpMethod.POST, SIGN_UP_URL).permitAll().anyRequest().authenticated().and().addFilter(new JWTAuthenticationFilter(authenticationManager())).addFilter(new JWTAuthorizationFilter(authenticationManager())).sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        httpSecurity
+                .cors()
+                .and()
+                .csrf()
+                .disable()
+                .authorizeRequests()
+                .antMatchers(HttpMethod.POST, SIGN_UP_URL)
+                .permitAll()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .addFilter(new JWTAuthenticationFilter(authenticationManager()))
+                .addFilter(new JWTAuthorizationFilter(authenticationManager()))
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 
     public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception{
-        authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(bCryptPasswordEncoder);
+        authenticationManagerBuilder
+                .userDetailsService(userDetailsService)
+                .passwordEncoder(bCryptPasswordEncoder);
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(){
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+        source
+                .registerCorsConfiguration("/**", new CorsConfiguration()
+                        .applyPermitDefaultValues());
         return source;
     }
 }

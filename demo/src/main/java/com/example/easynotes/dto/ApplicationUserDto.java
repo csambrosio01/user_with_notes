@@ -4,9 +4,9 @@ import java.util.Date;
 
 public class ApplicationUserDto {
     private Long id;
-    private Date createdAt;
     private String username;
     private Date updatedAt;
+    private Date createdAt;
 
     public void setId(Long id) {
         this.id = id;

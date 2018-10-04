@@ -24,13 +24,13 @@ public class NoteController {
     //Create a new Note
     @PostMapping("/{userId}/notes")
     public NotesDto createNote(@PathVariable (value = "userId") Long userId, @Valid @RequestBody NotesDto notesDto) throws ParseException {
-        return noteService.createNote1(userId, notesDto);
+        return noteService.createNote(userId, notesDto);
     }
 
     //Get a Single Note
     @GetMapping("/{userId}/notes/{noteId}")
     public NotesDto getNoteByUserIdAndNoteId(@PathVariable(value = "userId") Long userId, @PathVariable(value = "noteId") Long noteId) throws ParseException {
-        return noteService.getNoteByUserAndNoteId(userId, noteId);
+        return noteService.getNoteByUserIdAndNoteId(userId, noteId);
     }
 
     //Update a Note

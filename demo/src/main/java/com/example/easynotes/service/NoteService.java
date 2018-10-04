@@ -11,6 +11,7 @@ import com.example.easynotes.repository.NoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.Valid;
 import java.text.ParseException;
@@ -25,15 +26,16 @@ public class NoteService {
 
     private final UserService userService;
 
-    private final DtoManager dtoManager = new DtoManager();
+    private final DtoManager dtoManager;
 
     private final int MAX = 10;
 
 
     @Autowired
-    public NoteService(NoteRepository noteRepository, UserService userService){
+    public NoteService(NoteRepository noteRepository, UserService userService, DtoManager dtoManager){
         this.noteRepository = noteRepository;
         this.userService = userService;
+        this.dtoManager = dtoManager;
     }
 
     public List<Note> getAllNotesByUser(ApplicationUser user) {
@@ -52,25 +54,26 @@ public class NoteService {
             notes.set(i, notes.get(notes.size() - 1 - i));
             notes.set(notes.size() - 1 - i, aux);
         }
-        return notes.stream().map(dtoManager::convertToDto).collect(Collectors.toList());
+        return notes.stream().map(dtoManager::convertFromNoteToNotesDto).collect(Collectors.toList());
     }
 
-    public NotesDto createNote1(Long userId, NotesDto notesDto) throws ParseException {
+    @Transactional
+    public NotesDto createNote(Long userId, NotesDto notesDto) throws ParseException {
         ApplicationUser user = dtoManager.convertToEntity(userService.getById(userId));
         int numberOfNotes = getAllNotesByUser(user).size();
         if(user != null &&  numberOfNotes < MAX){
             Note note = dtoManager.convertToEntity(notesDto);
             note.setUser(user);
             noteRepository.save(note);
-            return dtoManager.convertToDto(note);
+            return dtoManager.convertFromNoteToNotesDto(note);
         }
         throw new NotesLimitReachedException("Can not add a new Note");
     }
-    public NotesDto getNoteByUserAndNoteId(Long userId, Long noteId) throws ParseException {
+    public NotesDto getNoteByUserIdAndNoteId(Long userId, Long noteId) throws ParseException {
         ApplicationUserDto user = userService.getById(userId);
         if (user != null) {
             Note saved = noteRepository.findByUserAndNoteId(dtoManager.convertToEntity(user), noteId);
-            if (saved != null) return dtoManager.convertToDto(saved);
+            if (saved != null) return dtoManager.convertFromNoteToNotesDto(saved);
         }
         throw new ResourceNotFoundException("UserId " + userId + " not found");
     }
@@ -80,9 +83,10 @@ public class NoteService {
         if(!note.isPresent()) {
             throw new ResourceNotFoundException();
         }
-        Note newNote = dtoManager.convertToEntity(noteRequest);
-        newNote.setNoteId(noteId);
-        return dtoManager.convertToDto(noteRepository.save(newNote));
+        note.get().setContent(noteRequest.getContent());
+        note.get().setTitle(noteRequest.getTitle());
+        noteRepository.save(note.get());
+        return dtoManager.convertFromNoteToNotesDto(note.get());
     }
 
     public ResponseEntity<?> deleteNote(Long noteId) {
